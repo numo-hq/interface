@@ -105,7 +105,7 @@
     "@emotion/babel-plugin": "^11.10.6",
     "@emotion/babel-preset-css-prop": "^11.10.0",
     "@graphql-codegen/cli": "^3.3.0",
-    "@graphql-codegen/client-preset": "^2.1.1",
+    "@graphql-codegen/client-preset": "^4.0.0",
     "@graphql-typed-document-node/core": "^3.2.0",
     "@simbathesailor/babel-plugin-use-what-changed": "^2.1.0",
     "@simbathesailor/use-what-changed": "^2.0.0",
