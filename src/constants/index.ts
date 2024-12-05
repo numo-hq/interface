@@ -17,6 +17,10 @@ export type NumoenBaseConfig = {
   liquidityManager: Address;
 };
 
+export type Config = (typeof config)[keyof typeof config];
+
+export type Protocol = keyof Config["procotol"];
+
 type UniswapConfig = {
   subgraph: string;
   factoryAddress: Address;
@@ -24,13 +28,11 @@ type UniswapConfig = {
 };
 
 type LiquidStakingConfig = {
-  base: NumoenBaseConfig;
   return: Percent;
   lendgine: Lendgine;
   color: `#${string}`;
 };
 
-// TODO: CELO doesn't need to be used as a native token
 export type NumoenInterfaceConfig = {
   uniswapV2: UniswapConfig;
   uniswapV3: UniswapConfig;
@@ -44,7 +46,7 @@ export type NumoenInterfaceConfig = {
 export const config: {
   [chain in SupportedChainIDs]: {
     interface: NumoenInterfaceConfig;
-    base: NumoenBaseConfig;
+    procotol: { pmmp: NumoenBaseConfig; stpmmp?: NumoenBaseConfig };
   };
 } = {
   42161: arbitrumConfig,

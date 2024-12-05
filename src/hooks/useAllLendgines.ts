@@ -33,7 +33,9 @@ export const useExistingLendginesQuery = () => {
   const queryKey = useExistingLendginesQueryKey();
   const queryFn = useExistingLendginesQueryFn();
 
-  return useQuery<ReturnType<typeof parseLendgines>>(queryKey, queryFn, {
+  return useQuery<ReturnType<typeof parseLendgines>>({
+    queryKey,
+    queryFn,
     staleTime: Infinity,
     refetchInterval: userRefectchInterval,
   });
@@ -46,42 +48,46 @@ export const useAllLendgines = () => {
   const chainID = useChain();
 
   return useMemo(() => {
-    if (lendginesQuery.isLoading || !lendginesQuery.data) return null;
+    if (lendginesQuery.isLoading) return { status: "loading" } as const;
+    if (!lendginesQuery.data) return { status: "error" } as const;
 
-    return lendginesQuery.data
-      .map((ld): Lendgine | undefined => {
-        const token0 = addressToToken(ld.token0);
-        const token1 = addressToToken(ld.token1);
+    return {
+      status: "success",
+      lendgines: lendginesQuery.data
+        .map((ld): Lendgine | undefined => {
+          const token0 = addressToToken(ld.token0);
+          const token1 = addressToToken(ld.token1);
 
-        if (!token0 || !token1) return undefined; // tokens must be in token list
-        // one of the tokens must be wrapped native or specialty
+          if (!token0 || !token1) return undefined; // tokens must be in token list
+          // one of the tokens must be wrapped native or specialty
 
-        const lendgine = {
-          token0,
-          token1,
-          token0Exp: ld.token0Exp,
-          token1Exp: ld.token1Exp,
-          bound: fractionToPrice(
-            new Fraction(ld.upperBound, scale),
+          const lendgine = {
+            token0,
             token1,
-            token0
-          ),
-          lendgine: new Token(chainID, ld.address, 18),
-          address: ld.address,
-        };
+            token0Exp: ld.token0Exp,
+            token1Exp: ld.token1Exp,
+            bound: fractionToPrice(
+              new Fraction(ld.upperBound, scale),
+              token1,
+              token0
+            ),
+            lendgine: new Token(chainID, ld.address, 18),
+            address: ld.address,
+          };
 
-        if (
-          !isValidLendgine(
-            lendgine,
-            environment.interface.wrappedNative,
-            environment.interface.specialtyMarkets
+          if (
+            !isValidLendgine(
+              lendgine,
+              environment.interface.wrappedNative,
+              environment.interface.specialtyMarkets
+            )
           )
-        )
-          return undefined;
+            return undefined;
 
-        return lendgine;
-      })
-      .filter((f): f is Lendgine => !!f);
+          return lendgine;
+        })
+        .filter((f): f is Lendgine => !!f),
+    } as const;
   }, [
     addressToToken,
     chainID,

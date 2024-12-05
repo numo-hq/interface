@@ -17,7 +17,7 @@ export const useLendgineToMarket = (lendgine: Lendgine): Market => {
 export const useMarketToLendgines = (
   market: Market
 ): readonly Lendgine[] | null => {
-  const lendgines = useAllLendgines();
-  if (!lendgines) return null;
-  return marketToLendgines(market, lendgines);
+  const lendginesQuery = useAllLendgines();
+  if (lendginesQuery.status !== "success") return null;
+  return marketToLendgines(market, lendginesQuery.lendgines);
 };

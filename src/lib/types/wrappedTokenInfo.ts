@@ -1,6 +1,8 @@
 import type { Currency, Token } from "@uniswap/sdk-core";
-import type { TokenInfo, TokenList } from "@uniswap/token-lists";
+import type { TokenList } from "@uniswap/token-lists";
 import { utils } from "ethers";
+
+import type { TokenInfo, color } from "../../hooks/useTokens";
 
 /**
  * Token instances created from token info on a token list.
@@ -45,6 +47,20 @@ export class WrappedTokenInfo implements Token {
 
   get logoURI(): string | undefined {
     return this.tokenInfo.logoURI;
+  }
+
+  get color():
+    | Record<
+        | "muted"
+        | "vibrant"
+        | "lightMuted"
+        | "lightVibrant"
+        | "darkMuted"
+        | "darkVibrant",
+        color
+      >
+    | undefined {
+    return this.tokenInfo.color;
   }
 
   equals(other: Currency): boolean {

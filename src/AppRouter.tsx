@@ -3,10 +3,11 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { Create } from "./components/pages/Create";
 import { Earn } from "./components/pages/Earn";
-import { EarnDetails } from "./components/pages/EarnDetails";
+import { Hedge } from "./components/pages/Hedge";
 import { LiquidStaking } from "./components/pages/LiquidStaking";
-import { Trade } from "./components/pages/Trade";
-import { TradeDetails } from "./components/pages/TradeDetails";
+import { Position } from "./components/pages/Positions";
+import { ProvideLiquidity } from "./components/pages/ProvideLiquidity";
+// import { Trade } from "./components/pages/Trade";
 import { useEnvironment } from "./contexts/useEnvironment";
 
 export const AppRouter: React.FC = () => {
@@ -15,11 +16,15 @@ export const AppRouter: React.FC = () => {
   const specialty = environment.interface.specialtyMarkets?.[0];
   return (
     <Routes>
-      <Route path="/trade" element={<Trade />} />
-      <Route path="/trade/details/:base/:quote" element={<TradeDetails />} />
+      {/* <Route path="/trade" element={<Trade />} /> */}
+      <Route path="/positions" element={<Position />} />
       <Route path="/earn" element={<Earn />} />
-      <Route path="/earn/details/:base/:quote" element={<EarnDetails />} />
       <Route path="/earn/liquid-staking" element={<LiquidStaking />} />
+      <Route
+        path="/earn/provide-liquidity/:protocol/:token0/:token1"
+        element={<ProvideLiquidity />}
+      />
+      <Route path="/earn/hedge-uniswap/:token0/:token1" element={<Hedge />} />
 
       <Route path="/create/" element={<Create />} />
 

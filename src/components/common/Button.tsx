@@ -68,17 +68,17 @@ export const Button: React.FC<ButtonProps> = ({
 export const StyledButton = styled.button<AdditionalButtonProps>(
   ({ variant = "primary" }) => [
     tw`flex flex-row items-center justify-center leading-normal`,
-    tw`rounded-lg`,
+    tw`rounded-xl`,
     tw`text-sm font-semibold`,
     tw`text-white active:scale-98 hover:bg-opacity-90`,
     tw`transition-transform`,
 
-    variant === "primary" && tw`bg-black shadow `,
+    variant === "primary" && tw`bg-black`,
 
-    variant === "inverse" && tw`text-black bg-white shadow`,
+    variant === "inverse" && tw`text-black bg-white`,
 
-    variant === "danger" && tw`font-bold shadow bg-red`,
+    variant === "danger" && tw`font-bold bg-red`,
 
-    tw`disabled:(bg-gray-100 text-gray-500  cursor-not-allowed)`,
+    tw`disabled:(bg-gray-200 text-secondary cursor-not-allowed)`,
   ]
 );

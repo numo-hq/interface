@@ -1,6 +1,6 @@
 import NumoenTokens from "@numoen/default-token-list";
 import type { Token } from "@uniswap/sdk-core";
-import type { TokenInfo } from "@uniswap/token-lists";
+import type { TokenInfo as UniswapTokenInfo } from "@uniswap/token-lists";
 import { utils } from "ethers";
 import { useCallback } from "react";
 import invariant from "tiny-invariant";
@@ -10,6 +10,20 @@ import { useChain } from "./useChain";
 import { useEnvironment } from "../contexts/useEnvironment";
 import { WrappedTokenInfo } from "../lib/types/wrappedTokenInfo";
 import { dedupe } from "../utils/dedupe";
+
+export type color = `#${string}` | undefined;
+
+export type TokenInfo = UniswapTokenInfo & {
+  color?: Record<
+    | "muted"
+    | "vibrant"
+    | "lightMuted"
+    | "lightVibrant"
+    | "darkMuted"
+    | "darkVibrant",
+    color
+  >;
+};
 
 export const useTokens = () => {
   const chain = useChain();

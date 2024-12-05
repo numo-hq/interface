@@ -14,16 +14,16 @@ import type { WrappedTokenInfo } from "../lib/types/wrappedTokenInfo";
 export const useLendginesForTokens = (
   tokens: HookArg<readonly [WrappedTokenInfo, WrappedTokenInfo]>
 ) => {
-  const lendgines = useAllLendgines();
+  const lendginesQuery = useAllLendgines();
 
   return useMemo(() => {
-    if (!tokens || !lendgines) return null;
-    return lendgines.filter(
+    if (!tokens || lendginesQuery.status !== "success") return null;
+    return lendginesQuery.lendgines.filter(
       (l) =>
         (l.token0.equals(tokens[0]) && l.token1.equals(tokens[1])) ||
         (l.token0.equals(tokens[1]) && l.token1.equals(tokens[0]))
     );
-  }, [lendgines, tokens]);
+  }, [lendginesQuery.lendgines, lendginesQuery.status, tokens]);
 };
 
 export const useLendgine = <L extends Lendgine>(lendgine: HookArg<L>) => {

@@ -11,9 +11,9 @@ export const CenterSwitch: React.FC<Props> = ({ onClick, icon }: Props) => {
     <div tw="w-full flex justify-center items-center ">
       <button
         onClick={onClick}
-        tw="flex items-center justify-center self-center absolute bg-background border-stroke  border-2 rounded-lg h-6 w-6"
+        tw="flex items-center justify-center self-center absolute bg-white border-gray-200  border-2 rounded-lg h-6 w-6"
       >
-        <div tw="text-stroke justify-center items-center flex text-sm">
+        <div tw="text-secondary justify-center items-center flex text-sm">
           <FontAwesomeIcon
             icon={icon === "arrow" ? faArrowDown : faPlus}
             fixedWidth

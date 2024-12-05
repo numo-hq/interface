@@ -13,6 +13,7 @@
     "plugin:import/typescript",
     "plugin:react-hooks/recommended",
     "plugin:prettier/recommended",
+    "plugin:@tanstack/eslint-plugin-query/recommended",
     "prettier"
   ],
   "rules": {

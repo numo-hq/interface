@@ -7,6 +7,7 @@ import type { HookArg } from "./internal/types";
 import { useContractReads } from "./internal/useContractReads";
 import { userRefectchInterval } from "./internal/utils";
 import { getLendginePositionRead } from "./useLendginePosition";
+import type { Protocol } from "../constants";
 import { useEnvironment } from "../contexts/useEnvironment";
 import { scale } from "../lib/constants";
 import { fractionToPrice } from "../lib/price";
@@ -14,21 +15,19 @@ import type { Lendgine } from "../lib/types/lendgine";
 
 export const useLendginesPositions = <L extends Lendgine>(
   lendgines: HookArg<readonly L[]>,
-  address: HookArg<Address>
+  address: HookArg<Address>,
+  procotol: Protocol = "pmmp"
 ) => {
   const environment = useEnvironment();
+  const protocolConfig = environment.procotol[procotol]!;
   const contracts = useMemo(
     () =>
       !!lendgines && !!address
         ? lendgines.map((l) =>
-            getLendginePositionRead(
-              l,
-              address,
-              environment.base.liquidityManager
-            )
+            getLendginePositionRead(l, address, protocolConfig.liquidityManager)
           )
         : undefined,
-    [address, environment.base.liquidityManager, lendgines]
+    [address, lendgines, protocolConfig.liquidityManager]
   );
 
   return useContractReads({

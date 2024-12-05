@@ -1,64 +1,52 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { useMemo } from "react";
 import { BsLightningChargeFill } from "react-icons/bs";
-import { NavLink } from "react-router-dom";
 import { styled } from "twin.macro";
 
+import { EarnCard } from "./ProvideLiquidity";
 import { useEnvironment } from "../../../contexts/useEnvironment";
 import { formatPercent } from "../../../utils/format";
-import { Button } from "../../common/Button";
 import { LoadingSpinner } from "../../common/LoadingSpinner";
-import { useLPReturns, useLongReturns } from "../LiquidStaking/useReturns";
+import { TokenIcon } from "../../common/TokenIcon";
+import { useLongReturns } from "../LiquidStaking/useReturns";
 
 export const LiquidStaking: React.FC = () => {
   const environment = useEnvironment();
-  const longAPR = useLongReturns();
-  const lpAPR = useLPReturns();
-
-  const maxAPR = useMemo(
-    () =>
-      !longAPR.totalAPR || !lpAPR.totalAPR
-        ? undefined
-        : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        longAPR.totalAPR?.greaterThan(lpAPR.totalAPR)
-        ? longAPR.totalAPR
-        : lpAPR.totalAPR,
-    [longAPR, lpAPR]
-  );
+  const longAPRQuery = useLongReturns();
 
   return (
     <Background
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      to="liquid-staking"
+      tw="justify-between p-6 items-center"
       color={environment.interface.liquidStaking!.color}
-      tw="w-full max-w-5xl rounded grid gap-4 sm:(justify-between flex) p-6 shadow items-center mb-12"
     >
-      <div tw="grid gap-4">
-        <p tw="text-3xl font-bold">Liquid Staking Boost</p>
-        <p tw="text-secondary items-center ">
-          Boost your{" "}
-          {environment.interface.liquidStaking?.lendgine.token1.symbol} yield
-          from {formatPercent(environment.interface.liquidStaking!.return)} to
-          <Shake tw="flex gap-1 items-center">
-            <p tw="text-xl font-bold">
-              {maxAPR ? formatPercent(maxAPR) : <LoadingSpinner />}
-            </p>
-            <BsLightningChargeFill tw="fill-yellow-300 text-xl" />
-          </Shake>
+      <p tw="text-xl font-bold">Liquid Staking Boost</p>
+      <TokenIcon
+        token={environment.interface.liquidStaking!.lendgine.token1}
+        size={48}
+      />
+      <Shake tw="flex gap-1 items-center">
+        <p tw="text-xl font-bold text-secondary">
+          {longAPRQuery.status === "success" ? (
+            formatPercent(longAPRQuery.data.totalAPR)
+          ) : (
+            <LoadingSpinner />
+          )}
         </p>
-      </div>
-      <NavLink to="liquid-staking">
-        <Button variant="inverse" tw=" text-xl px-6 py-2 h-fit">
-          Stake now
-        </Button>
-      </NavLink>
+        <BsLightningChargeFill tw="fill-yellow-300 text-xl" />
+      </Shake>
+      <p tw="text-secondary text-xs font-medium text-center ">
+        Boost your {environment.interface.liquidStaking?.lendgine.token1.symbol}{" "}
+        yield by speculating on staking rewards
+      </p>
     </Background>
   );
 };
 
-const Background = styled.div<{ color: `#${string}` }>`
+const Background = styled(EarnCard)<{ color: `#${string}` }>`
   background-image: linear-gradient(
     to top right,
     white,
+    85%,
     ${({ color }) => color}
   );
 `;

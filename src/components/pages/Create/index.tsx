@@ -5,11 +5,12 @@ import invariant from "tiny-invariant";
 import type { Address } from "wagmi";
 import { useAccount } from "wagmi";
 
-import { useCreate, useDepositAmounts } from "./useCreate";
 import { useEnvironment } from "../../../contexts/useEnvironment";
 import { useAllLendgines } from "../../../hooks/useAllLendgines";
+import { useDepositAmount } from "../../../hooks/useAmounts";
 import { useBalance } from "../../../hooks/useBalance";
 import { useChain } from "../../../hooks/useChain";
+import { useCreate } from "../../../hooks/useCreate";
 import { useMostLiquidMarket } from "../../../hooks/useExternalExchange";
 import { useTokens } from "../../../hooks/useTokens";
 import { isValidLendgine } from "../../../lib/lendgineValidity";
@@ -35,7 +36,7 @@ export const Create: React.FC = () => {
   const chainID = useChain();
 
   const tokens = useTokens();
-  const lendgines = useAllLendgines();
+  const lendginesQuery = useAllLendgines();
 
   const [token0, setToken0] = useState<WrappedTokenInfo | undefined>(undefined);
   const [token1, setToken1] = useState<WrappedTokenInfo | undefined>(undefined);
@@ -50,16 +51,6 @@ export const Create: React.FC = () => {
   const priceQuery = useMostLiquidMarket(
     !!token0 && !!token1 ? { quote: token0, base: token1 } : null
   );
-
-  const { token0Input: token0InputAmount, token1Input: token1InputAmount } =
-    useDepositAmounts({
-      amount:
-        tryParseCurrencyAmount(token0Input, token0) ??
-        tryParseCurrencyAmount(token1Input, token1),
-      token0,
-      token1,
-      bound,
-    });
 
   const lendgine = useMemo(
     () =>
@@ -77,11 +68,18 @@ export const Create: React.FC = () => {
     [bound, chainID, token0, token1]
   );
 
-  const create = useCreate({
-    token0Input: token0InputAmount,
-    token1Input: token1InputAmount,
-    bound,
-  });
+  const depositAmount = useDepositAmount(
+    lendgine,
+    tryParseCurrencyAmount(token0Input, token0) ??
+      tryParseCurrencyAmount(token1Input, token1),
+    "pmmp"
+  );
+  const create = useCreate(
+    lendgine,
+    tryParseCurrencyAmount(token0Input, token0) ??
+      tryParseCurrencyAmount(token1Input, token1),
+    "pmmp"
+  );
 
   const onInput = useCallback((value: string, field: "token0" | "token1") => {
     field === "token0" ? setToken0Input(value) : setToken1Input(value);
@@ -102,8 +100,10 @@ export const Create: React.FC = () => {
     () =>
       !token0 || !token1
         ? "Select a token"
-        : !priceQuery.data || lendgines === null
+        : !priceQuery.data
         ? "Loading"
+        : priceToFraction(priceQuery.data.price).greaterThan(bound)
+        ? "Bound can't be below current price"
         : !lendgine ||
           !isValidLendgine(
             lendgine,
@@ -111,45 +111,53 @@ export const Create: React.FC = () => {
             environment.interface.specialtyMarkets
           )
         ? "Does not conform to the rules of valid markets"
-        : priceToFraction(priceQuery.data.price).greaterThan(bound)
-        ? "Bound can't be below current price"
-        : !token0InputAmount || !token1InputAmount
+        : !token0Input && !token1Input
         ? "Enter an amount"
-        : lendgines.find(
+        : !tryParseCurrencyAmount(token0Input, token0) ??
+          !tryParseCurrencyAmount(token1Input, token1)
+        ? "Invalid amount"
+        : lendginesQuery.status !== "success"
+        ? "Loading"
+        : lendginesQuery.lendgines.find(
             (l) =>
               l.token0.equals(token0) &&
               l.token1.equals(token1) &&
               l.bound.equalTo(fractionToPrice(bound, token1, token0))
           )
         ? " Market already exists"
-        : (token0Balance.data &&
-            token0InputAmount.greaterThan(token0Balance.data)) ||
-          (token1Balance.data &&
-            token1InputAmount.greaterThan(token1Balance.data))
-        ? "Insufficient amount"
-        : create.status !== "success"
+        : depositAmount.status !== "success" ||
+          create.status !== "success" ||
+          !token0Balance.data ||
+          !token1Balance.data
         ? "Loading"
+        : depositAmount.amount0.greaterThan(token0Balance.data) ||
+          depositAmount.amount1.greaterThan(token1Balance.data)
+        ? "Insufficient amount"
         : null,
     [
       bound,
       create.status,
+      depositAmount.amount0,
+      depositAmount.amount1,
+      depositAmount.status,
       environment.interface.specialtyMarkets,
       environment.interface.wrappedNative,
       lendgine,
-      lendgines,
+      lendginesQuery.lendgines,
+      lendginesQuery.status,
       priceQuery.data,
       token0,
       token0Balance.data,
-      token0InputAmount,
+      token0Input,
       token1,
       token1Balance.data,
-      token1InputAmount,
+      token1Input,
     ]
   );
 
   return (
     <PageMargin tw="w-full pb-12 sm:pb-0 flex flex-col  gap-2">
-      <div tw="w-full max-w-5xl rounded bg-white  border border-[#dfdfdf] pt-12 md:pt-20 px-6 pb-6 shadow mb-12">
+      <div tw="w-full max-w-5xl bg-white pt-12 md:pt-20 px-6 pb-6 mb-12">
         <div tw="flex flex-col lg:flex-row lg:justify-between gap-4 lg:items-center">
           <p tw="font-bold text-4xl">Create a new market</p>
 
@@ -168,17 +176,17 @@ export const Create: React.FC = () => {
           </p>
         </div>
       </div>
-      <div tw="flex flex-col gap-4 w-full rounded-xl bg-white border border-[#dfdfdf] shadow max-w-xl p-6">
-        <div tw="flex flex-col rounded-lg border border-gray-200">
+      <div tw="flex flex-col gap-2 w-full max-w-lg">
+        <div tw="border-2 border-gray-200 bg-white rounded-xl">
           <AssetSelection
-            tw="pb-4"
+            tw="p-2"
             onSelect={setToken1}
             tokens={removeToken0}
-            selectedValue={token1 ?? null}
+            selectedValue={token1}
             label="Long"
             inputValue={
               token1Input === ""
-                ? token1InputAmount?.toSignificant(5) ?? "" // TODO: use smart currency formatter
+                ? depositAmount.amount1?.toSignificant(5) ?? "" // TODO: use smart currency formatter
                 : token1Input
             }
             inputOnChange={(value) => {
@@ -189,18 +197,17 @@ export const Create: React.FC = () => {
               allowSelect: true,
             }}
           />
-          <div tw=" border-b w-full border-gray-200" />
-
+          <div tw=" border-b-2 w-full border-gray-200" />
           <CenterSwitch icon="plus" />
           <AssetSelection
-            tw="pb-4"
+            tw="p-2"
             onSelect={setToken0}
             tokens={removeToken1}
-            selectedValue={token0 ?? null}
+            selectedValue={token0}
             label="Short"
             inputValue={
               token0Input === ""
-                ? token0InputAmount?.toSignificant(5) ?? ""
+                ? depositAmount.amount0?.toSignificant(5) ?? ""
                 : token0Input
             }
             inputOnChange={(value) => {
@@ -213,28 +220,29 @@ export const Create: React.FC = () => {
           />
         </div>
 
-        <RowBetween tw="items-center p-0">
-          <p>Bound</p>
-          <div tw="flex items-center gap-1">
-            <p tw="text-end">
-              {formatDisplayWithSoftLimit(fractionToFloat(bound), 4, 6, {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 4,
-              })}
+        <div tw="border-2 border-gray-200 bg-white gap-4 rounded-xl h-12 justify-center flex flex-col p-2">
+          <RowBetween tw="p-0">
+            <p tw="text-lg font-medium ">
+              Bound{" "}
+              {priceQuery.data && (
+                <span tw="text-xs text-secondary font-medium">
+                  (Price: {formatPrice(priceQuery.data.price)} {token0?.symbol}{" "}
+                  / {token1?.symbol})
+                </span>
+              )}
             </p>
-            <Plus icon="minus" onClick={() => setBound(bound.divide(2))} />
-            <Plus icon="plus" onClick={() => setBound(bound.multiply(2))} />
-          </div>
-        </RowBetween>
-        {priceQuery.data && (
-          <div tw="w-full justify-end flex mt-[-1rem]">
-            <p tw="text-xs">
-              <span tw="text-secondary">Current price: </span>
-              {formatPrice(priceQuery.data.price)} {token0?.symbol} /{" "}
-              {token1?.symbol}
-            </p>
-          </div>
-        )}
+            <div tw="flex items-center gap-1">
+              <p tw="text-end">
+                {formatDisplayWithSoftLimit(fractionToFloat(bound), 4, 6, {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 4,
+                })}
+              </p>
+              <Plus icon="minus" onClick={() => setBound(bound.divide(2))} />
+              <Plus icon="plus" onClick={() => setBound(bound.multiply(2))} />
+            </div>
+          </RowBetween>
+        </div>
 
         <AsyncButton
           variant="primary"

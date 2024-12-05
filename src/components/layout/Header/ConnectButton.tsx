@@ -55,7 +55,7 @@ export const ConnectButton: React.FC = () => {
                     </div>
                   </button>
                   <button onClick={openChainModal}>
-                    <div tw="p-1.5 rounded-xl bg-[#4f4f4f]">
+                    <div tw="h-10 px-1.5 items-center justify-center flex flex-col rounded-xl bg-[#4f4f4f]">
                       <img
                         alt={chain.name ?? "Chain icon"}
                         src={

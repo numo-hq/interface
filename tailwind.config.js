@@ -5,6 +5,7 @@ const brandColors = {
 };
 
 const gray = {
+  50: "#f5f5f4",
   100: "#EFEFEF",
   200: "#dfdfdf",
   300: "#cfcfcf",

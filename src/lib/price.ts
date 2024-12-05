@@ -2,7 +2,6 @@ import type { CurrencyAmount, Fraction, Token } from "@uniswap/sdk-core";
 import { Price } from "@uniswap/sdk-core";
 import JSBI from "jsbi";
 
-import { liquidityPerCollateral } from "./lendgineMath";
 import type { Lendgine, LendgineInfo } from "./types/lendgine";
 import type { WrappedTokenInfo } from "./types/wrappedTokenInfo";
 
@@ -26,48 +25,6 @@ export const numoenPrice = <L extends Lendgine>(
   );
 
   return fractionToPrice(priceFraction, lendgine.token1, lendgine.token0);
-};
-
-// The value of one nondiluted share of collateral in terms of token0
-export const pricePerCollateral = <L extends Lendgine>(
-  lendgine: L,
-  lendgineInfo: LendgineInfo<L>
-) => {
-  const price = numoenPrice(lendgine, lendgineInfo);
-
-  return liquidityPerCollateral(lendgine).invert().multiply(price);
-};
-
-// The value of one nondiluted share of liquidity in terms of token0
-export const pricePerLiquidity = <L extends Lendgine>(
-  args: (
-    | { lendgineInfo: LendgineInfo<L> }
-    | { price: Price<L["token1"], L["token0"]> }
-  ) & { lendgine: L }
-) => {
-  const price = priceToFraction(
-    "lendgineInfo" in args
-      ? numoenPrice(args.lendgine, args.lendgineInfo)
-      : args.price
-  );
-
-  const f = priceToFraction(args.lendgine.bound)
-    .multiply(price)
-    .multiply(2)
-    .subtract(price.multiply(price));
-
-  return fractionToPrice(f, args.lendgine.lendgine, args.lendgine.token0);
-};
-
-// The value of one nondiluted share in terms of token0
-export const pricePerShare = <L extends Lendgine>(
-  lendgine: L,
-  lendgineInfo: LendgineInfo<L>
-) => {
-  const f = pricePerCollateral(lendgine, lendgineInfo).subtract(
-    pricePerLiquidity({ lendgine, lendgineInfo })
-  );
-  return fractionToPrice(f, lendgine.lendgine, lendgine.token0);
 };
 
 export const nextHighestLendgine = <L extends Lendgine>(

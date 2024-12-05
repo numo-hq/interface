@@ -111,36 +111,34 @@ export function useContractRead<
     return enabled;
   }, [abi, address, enabled_, functionName]);
 
-  return useQuery(
-    queryKey_,
-    queryFn({
+  return useQuery({
+    queryKey: queryKey_,
+    queryFn: queryFn({
       // TODO: Remove cast and still support `Narrow<TAbi>`
       abi: abi as Abi,
     }),
-    {
-      refetchInterval: refetchInterval as number,
-      cacheTime,
-      enabled,
-      isDataEqual,
-      select: (data) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const result =
-          abi && functionName
-            ? parseContractResult({
-                // TODO: Remove cast and still support `Narrow<TAbi>`
-                abi: abi as Abi,
-                data,
-                functionName,
-              })
-            : data;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
-        return select ? select(result) : result;
-      },
-      staleTime,
-      suspense,
-      onError,
-      onSettled,
-      onSuccess,
-    }
-  );
+    refetchInterval: refetchInterval as number,
+    cacheTime,
+    enabled,
+    isDataEqual,
+    select: (data) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const result =
+        abi && functionName
+          ? parseContractResult({
+              // TODO: Remove cast and still support `Narrow<TAbi>`
+              abi: abi as Abi,
+              data,
+              functionName,
+            })
+          : data;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument
+      return select ? select(result) : result;
+    },
+    staleTime,
+    suspense,
+    onError,
+    onSettled,
+    onSuccess,
+  });
 }

@@ -145,7 +145,9 @@ UseQueryResult<TSelectData, Error> {
     ({ abi }) => abi
   );
 
-  return useQuery(queryKey_, queryFn({ abis }), {
+  return useQuery({
+    queryKey: queryKey_,
+    queryFn: queryFn({ abis }),
     refetchInterval: refetchInterval as number,
     cacheTime,
     enabled,

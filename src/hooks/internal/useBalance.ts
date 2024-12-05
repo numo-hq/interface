@@ -76,12 +76,13 @@ export function useBalance<TSelectData = FetchBalanceResult>({
       }),
     [address, chainId, environment.interface.wrappedNative.address, formatUnits]
   );
-  const balanceQuery = useQuery(queryKey_, queryFn, {
+  const balanceQuery = useQuery({
+    queryKey: queryKey_,
+    queryFn,
     cacheTime,
     enabled: Boolean(enabled && address),
     staleTime,
     suspense,
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     select: (data) => select!(data),
     onError,
     onSettled,

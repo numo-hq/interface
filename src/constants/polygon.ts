@@ -2,7 +2,7 @@ import type { Currency } from "@uniswap/sdk-core";
 import { NativeCurrency, Percent, Price, Token } from "@uniswap/sdk-core";
 import { utils } from "ethers";
 
-import type { NumoenInterfaceConfig } from ".";
+import type { Config } from ".";
 import { WrappedNative } from "./tokens";
 import { chainID } from "../lib/constants";
 import { WrappedTokenInfo } from "../lib/types/wrappedTokenInfo";
@@ -97,15 +97,6 @@ export class Matic extends NativeCurrency {
 }
 
 export const polygonConfig = {
-  base: {
-    factory: utils.getAddress("0x8396a792510a402681812ece6ad3ff19261928ba"),
-    lendgineRouter: utils.getAddress(
-      "0x6a931466f6C79724CB5E78EaB6E493b6AF189FF0"
-    ),
-    liquidityManager: utils.getAddress(
-      "0x6b0c66824c39766f554F07481B66ca24A54A90E0"
-    ),
-  },
   interface: {
     uniswapV2: {
       subgraph: "https://api.thegraph.com/subgraphs/name/sameepsi/quickswap06",
@@ -135,11 +126,6 @@ export const polygonConfig = {
           18
         ),
       },
-      base: {
-        factory: "0x58db4e36755699188ff21E68A11308fDEb8792b5",
-        liquidityManager: "0xe964F66B143E2C4752F3F4d37bfc9e74dE4e6eEB",
-        lendgineRouter: "0xC63292042D983C2196ab52F4101043F128EcEF67",
-      },
       color: "#a457ff",
     },
     numoenSubgraph:
@@ -157,5 +143,21 @@ export const polygonConfig = {
       { base: BOB, quote: USDC },
       { base: GHST, quote: USDC },
     ],
-  } as const satisfies NumoenInterfaceConfig,
-};
+  },
+  procotol: {
+    pmmp: {
+      factory: utils.getAddress("0x8396a792510a402681812ece6ad3ff19261928ba"),
+      lendgineRouter: utils.getAddress(
+        "0x6a931466f6C79724CB5E78EaB6E493b6AF189FF0"
+      ),
+      liquidityManager: utils.getAddress(
+        "0x6b0c66824c39766f554F07481B66ca24A54A90E0"
+      ),
+    },
+    stpmmp: {
+      factory: "0x58db4e36755699188ff21E68A11308fDEb8792b5",
+      liquidityManager: "0xe964F66B143E2C4752F3F4d37bfc9e74dE4e6eEB",
+      lendgineRouter: "0xC63292042D983C2196ab52F4101043F128EcEF67",
+    },
+  },
+} as const satisfies Config;

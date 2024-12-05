@@ -5,6 +5,7 @@ import type { HookArg, ReadConfig } from "./internal/types";
 import { useContractRead } from "./internal/useContractRead";
 import { userRefectchInterval } from "./internal/utils";
 import { liquidityManagerABI } from "../abis/liquidityManager";
+import type { Protocol } from "../constants";
 import { useEnvironment } from "../contexts/useEnvironment";
 import { scale } from "../lib/constants";
 import { fractionToPrice } from "../lib/price";
@@ -13,16 +14,17 @@ import type { Lendgine } from "../lib/types/lendgine";
 export const useLendginePosition = <L extends Lendgine>(
   lendgine: HookArg<L>,
   address: HookArg<Address>,
-  liquidityManager?: Address
+  protocol: Protocol
 ) => {
   const environment = useEnvironment();
+  const protocolConfig = environment.procotol[protocol]!;
 
   const config =
     !!lendgine && !!address
       ? getLendginePositionRead(
           lendgine,
           address,
-          liquidityManager ?? environment.base.liquidityManager
+          protocolConfig.liquidityManager
         )
       : {
           address: undefined,

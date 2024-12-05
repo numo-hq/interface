@@ -42,7 +42,7 @@ const Section = styled.div(tw`flex items-center justify-between`);
 type Props<T extends WrappedTokenInfo> = {
   tokens?: readonly T[];
   onSelect?: (token: T) => void;
-  selectedValue: T | null;
+  selectedValue?: T;
   inputOnChange?: (val: string) => void;
   inputValue?: string;
   hideInput?: boolean;
@@ -80,7 +80,7 @@ export const AssetSelection: React.FC<Props<WrappedTokenInfo>> = ({
   // const disp
 
   return (
-    <div tw="flex w-full flex-col pt-2 px-2" className={className}>
+    <div tw="flex w-full flex-col pt-2 px-2 h-20" className={className}>
       <>
         <Section>
           <div tw=" text-secondary text-xs">{label}</div>
@@ -151,7 +151,7 @@ export const AssetSelection: React.FC<Props<WrappedTokenInfo>> = ({
                 {!token ? (
                   <div tw={"flex p-1.5 space-x-2 items-center"}>
                     <div tw="text-lg font-semibold leading-none text-white">
-                      Select a token
+                      Select
                     </div>
                   </div>
                 ) : (
@@ -167,11 +167,11 @@ export const AssetSelection: React.FC<Props<WrappedTokenInfo>> = ({
 
                 {onSelect &&
                   (!token ? (
-                    <div tw="text-sm flex items-center ml-2 text-white">
+                    <div tw="text-sm flex items-center text-white">
                       <FontAwesomeIcon fixedWidth icon={faChevronDown} />
                     </div>
                   ) : (
-                    <div tw="text-sm flex items-center ml-2">
+                    <div tw="text-sm flex items-center">
                       <FontAwesomeIcon fixedWidth icon={faChevronDown} />
                     </div>
                   ))}
@@ -182,11 +182,11 @@ export const AssetSelection: React.FC<Props<WrappedTokenInfo>> = ({
         {!hideInput && (
           <div tw="flex grow flex-1">
             <BigNumericInput
-              tw="text-right text-black w-full py-1"
+              tw="text-right text-black w-full py-1 text-3xl"
               disabled={inputDisabled}
               value={inputValue}
               onChange={inputOnChange}
-              placeholder="0.0"
+              placeholder="0"
             />
           </div>
         )}

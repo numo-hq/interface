@@ -1,65 +1,40 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import invariant from "tiny-invariant";
 import { createContainer } from "unstated-next";
 
 import { TradeInner } from "./TradeInner";
-import { useEnvironment } from "../../../contexts/useEnvironment";
 import { useAllLendgines } from "../../../hooks/useAllLendgines";
-import { lendgineToMarket } from "../../../lib/lendgineValidity";
-import type { Market } from "../../../lib/types/market";
+import type { Lendgine } from "../../../lib/types/lendgine";
 import type { WrappedTokenInfo } from "../../../lib/types/wrappedTokenInfo";
-import { dedupe } from "../../../utils/dedupe";
+import { LoadingPage } from "../../common/LoadingPage";
 
 interface ITrade {
-  assets: readonly WrappedTokenInfo[];
-  setAssets: (val: readonly WrappedTokenInfo[]) => void;
+  token0: WrappedTokenInfo | undefined;
+  setToken0: (val: WrappedTokenInfo) => void;
 
-  markets: readonly Market[] | null;
+  token1: WrappedTokenInfo | undefined;
+  setToken1: (val: WrappedTokenInfo) => void;
+
+  lendgines: readonly Lendgine[];
 }
 
-const useTradeInternal = (): ITrade => {
-  const [assets, setAssets] = useState<readonly WrappedTokenInfo[]>([]);
+const useTradeInternal = ({
+  lendgines,
+}: {
+  lendgines?: readonly Lendgine[] | undefined;
+} = {}): ITrade => {
+  invariant(lendgines);
 
-  const environment = useEnvironment();
-
-  const lendgines = useAllLendgines();
-
-  const markets = useMemo(() => {
-    if (lendgines === null) return null;
-    const markets = lendgines.map((l) =>
-      lendgineToMarket(
-        l,
-        environment.interface.wrappedNative,
-        environment.interface.specialtyMarkets
-      )
-    );
-
-    const dedupedMarkets = dedupe(
-      markets,
-      (m) => m.base.address + m.quote.address
-    );
-
-    const filteredMarkets =
-      assets.length === 0
-        ? dedupedMarkets
-        : dedupedMarkets.filter(
-            (m) =>
-              !!assets.find((a) => a.equals(m.base)) ||
-              !!assets.find((a) => a.equals(m.quote))
-          );
-
-    return filteredMarkets;
-  }, [
-    assets,
-    environment.interface.specialtyMarkets,
-    environment.interface.wrappedNative,
-    lendgines,
-  ]);
+  const [token0, setToken0] = useState<WrappedTokenInfo | undefined>(undefined);
+  const [token1, setToken1] = useState<WrappedTokenInfo | undefined>(undefined);
 
   return {
-    assets,
-    setAssets,
+    token0,
+    setToken0,
+    token1,
+    setToken1,
 
-    markets,
+    lendgines,
   };
 };
 
@@ -67,8 +42,12 @@ export const { Provider: TradeProvider, useContainer: useTrade } =
   createContainer(useTradeInternal);
 
 export const Trade: React.FC = () => {
-  return (
-    <TradeProvider>
+  const lendginesQuery = useAllLendgines();
+
+  return lendginesQuery.status !== "success" ? (
+    <LoadingPage />
+  ) : (
+    <TradeProvider initialState={{ lendgines: lendginesQuery.lendgines }}>
       <TradeInner />
     </TradeProvider>
   );
